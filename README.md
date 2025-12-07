@@ -466,10 +466,14 @@ MIT © [react-cinematic-lighting](https://github.com/duy3302dev/react-cinematic-
 
 Inspired by the ambient lighting effects seen in modern video players like YouTube and Netflix.
 
-## 🚧 Roadmap
+## 🚧 Future Roadmap
 
-- [ ] WebGL-accelerated color extraction
-- [ ] Custom shader effects
-- [ ] Color palette generation
-- [ ] Accessibility improvements
-- [ ] React Native support
+Potential future enhancements being considered:
+
+- WebGL-accelerated color extraction for improved performance
+- Custom shader effects for advanced visual styles
+- Color palette generation from extracted colors
+- Accessibility improvements (WCAG compliance, reduced motion support)
+- React Native support for mobile applications
+
+Contributions and feedback are welcome!

@@ -68,6 +68,7 @@ export const CinematicCanvas = React.forwardRef<HTMLCanvasElement, CinematicCanv
     });
 
     // Expose extract function to parent
+    // Note: This will trigger on every render if onExtractTrigger is not memoized
     React.useEffect(() => {
       if (onExtractTrigger) {
         onExtractTrigger();
@@ -75,10 +76,16 @@ export const CinematicCanvas = React.forwardRef<HTMLCanvasElement, CinematicCanv
     }, [onExtractTrigger]);
 
     // Expose extract method via ref if needed
-    React.useImperativeHandle(forwardedRef, () => ({
-      ...canvasRef.current!,
-      extractColors: extract,
-    }));
+    React.useImperativeHandle(forwardedRef, () => {
+      const current = canvasRef.current;
+      if (!current) {
+        return null as any;
+      }
+      return {
+        ...current,
+        extractColors: extract,
+      };
+    }, [extract]);
 
     const lightingStyle: CSSProperties = {};
 

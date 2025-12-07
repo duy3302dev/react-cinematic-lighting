@@ -23,15 +23,33 @@ export function useCinematicLighting(
   const {
     fps = 30,
     enabled = true,
-    ...extractorOptions
+    sampleSize,
+    blurRadius,
+    opacity,
+    spread,
+    samplingStrategy,
   } = options;
 
   // Initialize extractor
   useEffect(() => {
     if (!extractorRef.current) {
-      extractorRef.current = new ColorExtractor({ fps, ...extractorOptions });
+      extractorRef.current = new ColorExtractor({ 
+        fps, 
+        sampleSize,
+        blurRadius,
+        opacity,
+        spread,
+        samplingStrategy,
+      });
     } else {
-      extractorRef.current.updateOptions({ fps, ...extractorOptions });
+      extractorRef.current.updateOptions({ 
+        fps, 
+        sampleSize,
+        blurRadius,
+        opacity,
+        spread,
+        samplingStrategy,
+      });
     }
 
     return () => {
@@ -40,7 +58,7 @@ export function useCinematicLighting(
         extractorRef.current = null;
       }
     };
-  }, [fps, extractorOptions]);
+  }, [fps, sampleSize, blurRadius, opacity, spread, samplingStrategy]);
 
   // Extraction function
   const extract = useCallback(() => {
