@@ -1,16 +1,12 @@
-<<<<<<< HEAD
 # react-cinematic-lighting
-A TypeScript-first React library for cinematic lighting effects—automatically extract colors from videos, images, canvases, and components to create ambient glows.
-=======
-# React Cinematic Lighting 🎬✨
 
-Thư viện React cho hiệu ứng cinematic lighting - tự động trích xuất màu từ video, ảnh, canvas và components để tạo ambient glow effects.
+A TypeScript-first React library for cinematic lighting effects—automatically extract colors from videos, images, canvases, and components to create ambient glows.
 
 ## ✨ Features
 
-- 🎥 **Video realtime extraction** - Color extraction từ video đang phát
-- 🖼️ **Image extraction** - Lấy dominant color từ ảnh
-- 🎨 **Component extraction** - Extract màu từ bất kỳ React component nào
+- 🎥 **Video realtime extraction** - Color extraction from playing videos
+- 🖼️ **Image extraction** - Extract dominant color from images
+- 🎨 **Component extraction** - Extract colors from any React component
 - ⚡ **Performance optimized** - FPS limiting, throttling, sparse sampling
 - 🎯 **TypeScript first** - Full type safety
 - 🪶 **Lightweight** - Zero dependencies (except React peer dep)
@@ -74,7 +70,7 @@ Wrap your app with this provider.
 
 ### `useAdaptiveItem(ref, options)`
 
-Hook để extract color từ một element.
+Hook to extract color from an element.
 
 **Options:**
 
@@ -123,5 +119,4 @@ Contributions welcome! Please open an issue or PR.
 
 ## 📄 License
 
-MIT © [Your Name]
->>>>>>> master
+MIT © DuyDoo
