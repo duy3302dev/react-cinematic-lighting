@@ -1,0 +1,42 @@
+ name: Publish Package to npm
+
+on:
+  # Kích hoạt workflow khi có một release mới được tạo (ví dụ: v1.0.0)
+  release:
+    types: [published]
+  # Cho phép chạy workflow thủ công từ GitHub UI
+  workflow_dispatch:
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+
+    # Chỉ định môi trường nếu bạn có điền Environment Name ở bước trước
+    # environment: production 
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # Lấy lịch sử git đầy đủ để có thể đọc phiên bản package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Đảm bảo Node.js version phù hợp với dự án của bạn
+          node-version: '20.x' 
+          # Thiết lập npm registry scope và token
+          registry-url: 'https://registry.npmjs.org'
+
+      # --- Bước 1: Cài đặt và Build ---
+      # Bước này quan trọng cho thư viện React/TypeScript
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build # Thay thế bằng lệnh build thực tế của bạn
+
+      # --- Bước 2: Publish lên npm ---
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          # Đảm bảo bạn đã lưu NPM Token là một Secret trong GitHub (Settings -> Secrets -> Actions)
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
