@@ -33,7 +33,7 @@ function createExtractor(
 }
 
 export const useAdaptiveItem = (
-  elementRef: React.RefObject<HTMLElement>,
+  elementRef: React.RefObject<HTMLElement | null>,
   options: Omit<AdaptiveItemProps, "children">
 ) => {
   const context = useAdaptiveContext();
