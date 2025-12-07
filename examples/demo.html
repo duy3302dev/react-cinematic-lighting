@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Cinematic Lighting Demo</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0a0a0a;
+        color: white;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 3rem;
+        font-size: 2.5rem;
+      }
+
+      .demo-section {
+        margin-bottom: 4rem;
+      }
+
+      .demo-section h2 {
+        margin-bottom: 1.5rem;
+        color: #60a5fa;
+      }
+
+      .video-wrapper {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      video {
+        width: 100%;
+        display: block;
+        border-radius: 12px;
+      }
+
+      .color-info {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+      }
+
+      .color-swatch {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        margin-right: 1rem;
+        vertical-align: middle;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .controls {
+        margin-top: 1rem;
+        display: flex;
+        gap: 1rem;
+      }
+
+      button {
+        padding: 0.5rem 1.5rem;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #2563eb;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+      }
+
+      .image-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .image-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .image-card-info {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .canvas-wrapper {
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      canvas {
+        width: 100%;
+        display: block;
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const {
+        useState,
+        useEffect,
+        useRef,
+        createContext,
+        useContext,
+        useMemo,
+        useCallback,
+      } = React;
+
+      // ============ COLOR UTILS ============
+      function dominantColor(imageData, sampling = 10) {
+        const data = imageData.data;
+        let r = 0,
+          g = 0,
+          b = 0;
+        let count = 0;
+
+        for (let i = 0; i < data.length; i += 4 * sampling) {
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          count++;
+        }
+
+        return {
+          r: Math.round(r / count),
+          g: Math.round(g / count),
+          b: Math.round(b / count),
+        };
+      }
+
+      function rgbToHex(color) {
+        return `#${color.r.toString(16).padStart(2, "0")}${color.g
+          .toString(16)
+          .padStart(2, "0")}${color.b.toString(16).padStart(2, "0")}`;
+      }
+
+      function throttle(func, delay) {
+        let lastCall = 0;
+        return (...args) => {
+          const now = Date.now();
+          if (now - lastCall >= delay) {
+            lastCall = now;
+            func(...args);
+          }
+        };
+      }
+
+      // ============ VIDEO EXTRACTOR ============
+      class VideoExtractor {
+        constructor(video, options = {}) {
+          this.video = video;
+          this.canvas = document.createElement("canvas");
+          this.ctx = this.canvas.getContext("2d", { willReadFrequently: true });
+          this.animationId = null;
+          this.options = options;
+        }
+
+        start(callback) {
+          const fps = this.options.fps || 10;
+          const interval = 1000 / fps;
+
+          const extract = throttle(() => {
+            if (this.video.paused || this.video.ended) return;
+
+            this.canvas.width = this.video.videoWidth || 320;
+            this.canvas.height = this.video.videoHeight || 180;
+
+            this.ctx.drawImage(
+              this.video,
+              0,
+              0,
+              this.canvas.width,
+              this.canvas.height
+            );
+
+            const imageData = this.ctx.getImageData(
+              0,
+              0,
+              this.canvas.width,
+              this.canvas.height
+            );
+            const color = dominantColor(imageData, this.options.sampling || 10);
+            callback(color);
+          }, interval);
+
+          const loop = () => {
+            extract();
+            this.animationId = requestAnimationFrame(loop);
+          };
+
+          loop();
+        }
+
+        stop() {
+          if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+          }
+        }
+      }
+
+      // ============ IMAGE EXTRACTOR ============
+      class ImageExtractor {
+        constructor(img, options = {}) {
+          this.img = img;
+          this.options = options;
+        }
+
+        start(callback) {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+          const extract = () => {
+            canvas.width = this.img.naturalWidth || this.img.width;
+            canvas.height = this.img.naturalHeight || this.img.height;
+
+            ctx.drawImage(this.img, 0, 0);
+
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const color = dominantColor(imageData, this.options.sampling || 10);
+            callback(color);
+          };
+
+          if (this.img.complete) {
+            extract();
+          } else {
+            this.img.addEventListener("load", extract, { once: true });
+          }
+        }
+
+        stop() {}
+      }
+
+      // ============ CONTEXT ============
+      const AdaptiveContext = createContext(null);
+
+      function AdaptiveProvider({ children }) {
+        const colors = useRef(new Map());
+
+        const contextValue = useMemo(
+          () => ({
+            setColor: (id, color) => colors.current.set(id, color),
+            getColor: (id) => colors.current.get(id) || null,
+          }),
+          []
+        );
+
+        return (
+          <AdaptiveContext.Provider value={contextValue}>
+            {children}
+          </AdaptiveContext.Provider>
+        );
+      }
+
+      // ============ HOOK ============
+      function useAdaptiveItem(elementRef, options = {}) {
+        const [color, setColor] = useState(null);
+        const extractorRef = useRef(null);
+
+        useEffect(() => {
+          if (!elementRef.current || !options.colorExtraction) return;
+
+          let extractor;
+
+          if (elementRef.current instanceof HTMLVideoElement) {
+            extractor = new VideoExtractor(elementRef.current, options);
+          } else if (elementRef.current instanceof HTMLImageElement) {
+            extractor = new ImageExtractor(elementRef.current, options);
+          }
+
+          if (extractor) {
+            extractorRef.current = extractor;
+            extractor.start(setColor);
+          }
+
+          return () => {
+            if (extractorRef.current) {
+              extractorRef.current.stop();
+            }
+          };
+        }, [
+          elementRef,
+          options.colorExtraction,
+          options.fps,
+          options.sampling,
+        ]);
+
+        return { color };
+      }
+
+      // ============ VIDEO DEMO ============
+      function VideoDemo() {
+        const videoRef = useRef(null);
+        const { color } = useAdaptiveItem(videoRef, {
+          colorExtraction: true,
+          fps: 10,
+          sampling: 8,
+        });
+
+        const wrapperStyle = color
+          ? {
+              padding: "2rem",
+              background: `radial-gradient(circle at center, rgba(${color.r}, ${color.g}, ${color.b}, 0.3) 0%, transparent 70%)`,
+              transition: "background 0.5s ease",
+            }
+          : { padding: "2rem" };
+
+        return (
+          <div className="demo-section">
+            <h2>🎥 Video Color Extraction</h2>
+            <div style={wrapperStyle}>
+              <div className="video-wrapper">
+                <video
+                  ref={videoRef}
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  crossOrigin="anonymous"
+                >
+                  <source
+                    src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                    type="video/mp4"
+                  />
+                </video>
+              </div>
+            </div>
+            {color && (
+              <div className="color-info">
+                <span
+                  className="color-swatch"
+                  style={{
+                    background: `rgb(${color.r}, ${color.g}, ${color.b})`,
+                  }}
+                ></span>
+                <strong>Extracted Color:</strong> rgb({color.r}, {color.g},{" "}
+                {color.b}) | {rgbToHex(color)}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // ============ IMAGE DEMO ============
+      function ImageDemo() {
+        const images = [
+          "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
+          "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400",
+          "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400",
+        ];
+
+        return (
+          <div className="demo-section">
+            <h2>🖼️ Image Color Extraction</h2>
+            <div className="image-grid">
+              {images.map((src, idx) => (
+                <ImageCard key={idx} src={src} />
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      function ImageCard({ src }) {
+        const imgRef = useRef(null);
+        const { color } = useAdaptiveItem(imgRef, {
+          colorExtraction: true,
+          sampling: 15,
+        });
+
+        const cardStyle = color
+          ? {
+              background: `linear-gradient(135deg, rgba(${color.r}, ${color.g}, ${color.b}, 0.2), transparent)`,
+              boxShadow: `0 8px 32px rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`,
+            }
+          : {};
+
+        return (
+          <div className="image-card" style={cardStyle}>
+            <img ref={imgRef} src={src} alt="Demo" crossOrigin="anonymous" />
+            {color && (
+              <div className="image-card-info">
+                <span
+                  className="color-swatch"
+                  style={{
+                    background: `rgb(${color.r}, ${color.g}, ${color.b})`,
+                  }}
+                ></span>
+                rgb({color.r}, {color.g}, {color.b})
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // ============ CANVAS DEMO ============
+      function CanvasDemo() {
+        const canvasRef = useRef(null);
+        const [isAnimating, setIsAnimating] = useState(false);
+
+        useEffect(() => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+
+          const ctx = canvas.getContext("2d");
+          canvas.width = 600;
+          canvas.height = 300;
+
+          let hue = 0;
+          let animationId;
+
+          const animate = () => {
+            hue = (hue + 1) % 360;
+
+            const gradient = ctx.createLinearGradient(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            gradient.addColorStop(0, `hsl(${hue}, 70%, 50%)`);
+            gradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 70%, 50%)`);
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (isAnimating) {
+              animationId = requestAnimationFrame(animate);
+            }
+          };
+
+          if (isAnimating) {
+            animate();
+          }
+
+          return () => {
+            if (animationId) {
+              cancelAnimationFrame(animationId);
+            }
+          };
+        }, [isAnimating]);
+
+        return (
+          <div className="demo-section">
+            <h2>🎨 Canvas Animation (Coming Soon)</h2>
+            <div className="canvas-wrapper">
+              <canvas ref={canvasRef}></canvas>
+            </div>
+            <div className="controls">
+              <button onClick={() => setIsAnimating(!isAnimating)}>
+                {isAnimating ? "Stop Animation" : "Start Animation"}
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ============ MAIN APP ============
+      function App() {
+        return (
+          <AdaptiveProvider>
+            <div className="container">
+              <h1>🎬 React Cinematic Lighting Demo</h1>
+              <VideoDemo />
+              <ImageDemo />
+              <CanvasDemo />
+            </div>
+          </AdaptiveProvider>
+        );
+      }
+
+      // Render
+      ReactDOM.render(<App />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
