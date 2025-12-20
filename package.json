@@ -1,6 +1,6 @@
 {
   "name": "react-cinematic-lighting",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "Cinematic lighting effects for React - video, images, and components",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -35,13 +35,13 @@
     "color-extraction",
     "ui-effects"
   ],
-  "author": "Your Name",
+  "author": "duy3302dev",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/duy3302dev/react-cinematic-lighting.git"
   },
-  "homepage": "https://github.com/duy3302dev/react-cinematic-lighting#readme",
+  "homepage": "https://v0-react-cinematic-lighting-docs.vercel.app",
   "peerDependencies": {
     "react": ">=19.0.0",
     "react-dom": ">=19.0.0"

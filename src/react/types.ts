@@ -13,6 +13,20 @@ export interface ColorRGB {
   b: number;
 }
 
+export interface MultiZoneColors {
+  left: ColorRGB;
+  right: ColorRGB;
+  top: ColorRGB;
+  bottom: ColorRGB;
+  topLeft?: ColorRGB;
+  topRight?: ColorRGB;
+  bottomLeft?: ColorRGB;
+  bottomRight?: ColorRGB;
+  center?: ColorRGB;
+}
+
+export type ExtractedColor = ColorRGB | MultiZoneColors;
+
 export interface AdaptiveItemProps {
   id?: string;
   intensity?: number; // 0..1
@@ -25,19 +39,30 @@ export interface AdaptiveItemProps {
   mode?: AdaptiveMode;
   color?: string | ColorRGB; // override auto-extracted color
   extractMode?: ExtractMode;
-  onColorChange?: (color: ColorRGB) => void;
+  onColorChange?: (color: ExtractedColor) => void;
   disabled?: boolean;
   children: React.ReactNode;
+  multiZone?: boolean | { enabled: boolean; zoneCount?: 4 | 8 | 12 };
+  zoneCount?: 4 | 8 | 12;
+  resolution?: "low" | "medium" | "high";
+  advancedGlow?:
+    | boolean
+    | { enabled: boolean; stripWidth?: number; blurStrength?: number };
+  stripWidth?: number;
+  blurStrength?: number;
 }
 
 export interface AdaptiveContextValue {
   register: (id: string, config: AdaptiveItemProps) => void;
   unregister: (id: string) => void;
-  updateColor: (id: string, color: ColorRGB) => void;
-  getColor: (id: string) => ColorRGB | null;
+  updateColor: (id: string, color: ExtractedColor) => void;
+  getColor: (id: string) => ExtractedColor | null;
 }
 
 export type ExtractorOptions = {
   fps?: number;
   sampling?: number;
+  multiZone?: boolean;
+  zoneCount?: 4 | 8 | 12;
+  resolution?: "low" | "medium" | "high";
 };

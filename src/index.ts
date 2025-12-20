@@ -4,7 +4,13 @@ export { useAdaptiveItem } from "./react/useAdaptiveItem";
 export { useAdaptiveController } from "./react/useAdaptiveController";
 
 // 🆕 NEW: Export components
-export { CinematicVideo, CinematicImage, CinematicCard } from "./components";
+export {
+  CinematicVideo,
+  CinematicImage,
+  CinematicCard,
+  CinematicCanvas,
+  CinematicText,
+} from "./components";
 
 // Core exports (cho advanced users)
 export { AdaptiveController } from "./core/adaptiveController";
@@ -15,6 +21,8 @@ export type {
   AdaptiveItemProps,
   AdaptiveMode,
   ColorRGB,
+  MultiZoneColors,
+  ExtractedColor,
   ExtractorOptions,
 } from "./react/types";
 
@@ -23,12 +31,14 @@ export type {
   CinematicVideoProps,
   CinematicImageProps,
   CinematicCardProps,
+  CinematicCanvasProps,
+  CinematicTextProps,
   PresetConfig,
   PresetName,
 } from "./components";
 
 // Utils (optional export)
-export { dominantColor, rgbToHex } from "./utils/colorUtils";
+export { dominantColor, rgbToHex, isMultiZoneColor } from "./utils/colorUtils";
 
 // 🆕 NEW: Presets
 export { PRESETS, getPresetConfig } from "./components";

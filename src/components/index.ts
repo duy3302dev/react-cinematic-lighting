@@ -2,6 +2,8 @@
 export { CinematicVideo } from "./CinematicVideo";
 export { CinematicImage } from "./CinematicImage";
 export { CinematicCard } from "./CinematicCard";
+export { CinematicCanvas } from "./CinematicCanvas";
+export { CinematicText } from "./CinematicText";
 
 // Export types
 export type {

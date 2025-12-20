@@ -8,7 +8,9 @@ A TypeScript-first React library for cinematic lighting effects—automatically 
 - 🖼️ **Image extraction** - Extract dominant color from static images
 - 🎨 **Component extraction** - Extract colors from any React component or DOM element
 - 🎬 **Ready-to-use components** - `CinematicVideo`, `CinematicImage`, `CinematicCard` with built-in effects
-- 🎭 **7 Built-in presets** - YouTube, Netflix, Spotify, Apple, Minimal, Neon, Ambient styles
+- � **Multi-zone color extraction** - Extract colors from 4/8/12 zones for directional ambient effects
+- ✨ **Advanced Glow Mode** - Strip-based extraction for realistic, pixel-accurate ambient lighting
+- �🎭 **7 Built-in presets** - YouTube, Netflix, Spotify, Apple, Minimal, Neon, Ambient styles
 - ⚡ **Performance optimized** - FPS limiting, throttling, sparse pixel sampling
 - 🎯 **TypeScript first** - Full type safety with comprehensive type definitions
 - 🪶 **Lightweight** - Zero dependencies (except React peer dependency)
@@ -25,6 +27,7 @@ yarn add react-cinematic-lighting
 ```
 
 **Requirements:**
+
 - React >= 19.0.0
 - Node >= 18
 
@@ -35,21 +38,28 @@ yarn add react-cinematic-lighting
 The easiest way to get started is with the built-in components:
 
 ```tsx
-import { AdaptiveProvider, CinematicVideo, CinematicImage, CinematicCard } from "react-cinematic-lighting";
+import {
+  AdaptiveProvider,
+  CinematicVideo,
+  CinematicImage,
+  CinematicCard,
+} from "react-cinematic-lighting";
 
 function App() {
   return (
     <AdaptiveProvider>
-      {/* Video with ambient glow */}
+      {/* Video with ambient glow - New grouped API */}
       <CinematicVideo
         src="video.mp4"
         preset="youtube"
         controls
         autoPlay
         loop
+        effects={{ intensity: 0.5, blur: 80 }}
+        extraction={{ fps: 10, sampling: 8 }}
       />
 
-      {/* Image with hover effects */}
+      {/* Image with hover effects - Backward compatible flat props */}
       <CinematicImage
         src="image.jpg"
         alt="Description"
@@ -58,7 +68,7 @@ function App() {
       />
 
       {/* Card with adaptive lighting */}
-      <CinematicCard preset="neon">
+      <CinematicCard preset="neon" layout={{ borderRadius: "16px" }}>
         <h2>Card Title</h2>
         <p>Card content with cinematic lighting</p>
       </CinematicCard>
@@ -66,6 +76,8 @@ function App() {
   );
 }
 ```
+
+> **Note:** Version 0.2.0 introduces a cleaner, grouped API for better organization. The flat props API is still fully supported for backward compatibility. See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for details.
 
 ### Using the Hook API
 
@@ -90,7 +102,7 @@ function VideoPlayer() {
   return (
     <div
       style={{
-        background: color 
+        background: color
           ? `radial-gradient(circle, rgba(${color.r}, ${color.g}, ${color.b}, 0.3) 0%, transparent 70%)`
           : "#000",
         padding: "2rem",
@@ -117,13 +129,12 @@ function App() {
 Context provider that manages the adaptive lighting system. Wrap your app or component tree with this provider.
 
 **Props:**
+
 - `children: React.ReactNode` - Your app content
 - `debug?: boolean` - Enable debug logging (default: `false`)
 
 ```tsx
-<AdaptiveProvider debug={false}>
-  {children}
-</AdaptiveProvider>
+<AdaptiveProvider debug={false}>{children}</AdaptiveProvider>
 ```
 
 ### `useAdaptiveItem(ref, options)`
@@ -131,10 +142,12 @@ Context provider that manages the adaptive lighting system. Wrap your app or com
 Hook to extract color from a DOM element (video, image, canvas, or any React component).
 
 **Parameters:**
+
 - `ref: React.RefObject<HTMLElement | null>` - Reference to the DOM element
 - `options: AdaptiveItemProps` - Configuration options
 
 **Options:**
+
 - `id?: string` - Unique identifier (auto-generated if not provided)
 - `colorExtraction?: boolean` - Enable/disable extraction (default: `true`)
 - `fps?: number` - Limit updates per second (default: `10`)
@@ -144,6 +157,7 @@ Hook to extract color from a DOM element (video, image, canvas, or any React com
 - `disabled?: boolean` - Disable extraction temporarily
 
 **Returns:**
+
 ```typescript
 {
   color: ColorRGB | null,  // Current extracted color
@@ -153,11 +167,12 @@ Hook to extract color from a DOM element (video, image, canvas, or any React com
 ```
 
 **ColorRGB type:**
+
 ```typescript
 interface ColorRGB {
-  r: number;  // 0-255
-  g: number;  // 0-255
-  b: number;  // 0-255
+  r: number; // 0-255
+  g: number; // 0-255
+  b: number; // 0-255
 }
 ```
 
@@ -166,6 +181,7 @@ interface ColorRGB {
 Ready-to-use video component with automatic color extraction and ambient glow effects.
 
 **Props:**
+
 - All standard HTML video props (`src`, `poster`, `autoPlay`, `loop`, `muted`, `controls`, etc.)
 - `preset?: PresetName | PresetConfig` - Preset name or custom config (default: `'ambient'`)
 - `intensity?: number` - Glow intensity 0-1 (overrides preset)
@@ -195,6 +211,7 @@ Ready-to-use video component with automatic color extraction and ambient glow ef
 Image component with color extraction and optional hover effects.
 
 **Props:**
+
 - All standard HTML image props (`src`, `alt`, `width`, `height`, `loading`, etc.)
 - `preset?: PresetName | PresetConfig` - Preset configuration
 - `hoverEffect?: boolean` - Enable hover animation (default: `false`)
@@ -217,6 +234,7 @@ Image component with color extraction and optional hover effects.
 Card component that extracts color from its content and applies ambient lighting.
 
 **Props:**
+
 - `children: React.ReactNode` - Card content
 - `preset?: PresetName | PresetConfig` - Preset configuration
 - `extractFrom?: 'background' | 'content' | 'dominant'` - Color extraction source (default: `'background'`)
@@ -232,21 +250,64 @@ Card component that extracts color from its content and applies ambient lighting
 </CinematicCard>
 ```
 
-## 🎭 Presets
+## � Advanced Features
+
+### Multi-Zone Color Extraction
+
+Extract colors from multiple zones (4/8/12) for directional ambient lighting effects:
+
+```tsx
+<CinematicVideo
+  src="video.mp4"
+  preset="youtube"
+  multiZone={true}
+  zoneCount={4} // 4, 8, or 12 zones
+/>
+```
+
+This creates different colored glows from each edge (left, right, top, bottom) based on the content in those areas.
+
+### Advanced Glow Mode
+
+For the most realistic ambient lighting, enable Advanced Glow Mode which uses strip-based pixel extraction:
+
+```tsx
+<CinematicVideo
+  src="video.mp4"
+  preset="youtube"
+  advancedGlow={true}
+  stripWidth={50} // Strip resolution in pixels
+  blurStrength={40} // Blur intensity
+/>
+```
+
+**How it works:**
+
+- Extracts pixel strips from the outer 15% of each edge
+- Preserves color variations instead of averaging
+- Renders blurred strips behind the video for realistic glow
+- Optimized with low-res extraction (default 50x10px strips)
+- Runs at 5 FPS for better performance
+
+**Best for:** Videos with dynamic scenes, colorful content, or when you want the most authentic ambient lighting effect.
+
+See [ADVANCED_GLOW.md](./ADVANCED_GLOW.md) for detailed documentation.
+
+## �🎭 Presets
 
 The library includes 7 built-in presets, each optimized for different use cases:
 
 ### Available Presets
 
-| Preset | Intensity | Blur | Glow | Best For |
-|--------|-----------|------|------|----------|
-| **youtube** | 0.3 | 80px | ✅ | Video players, content platforms |
-| **netflix** | 0.4 | 100px | ✅ | Premium video experiences |
-| **spotify** | 0.5 | 60px | ✅ | Music, vibrant content |
-| **apple** | 0.25 | 50px | ❌ | Minimal, elegant designs |
-| **minimal** | 0.15 | 40px | ❌ | Subtle effects |
-| **neon** | 0.7 | 30px | ✅ | Eye-catching, high-energy |
-| **ambient** | 0.35 | 70px | ✅ | Balanced, versatile (default) |
+| Preset      | Intensity | Blur  | Glow | Best For                         |
+| ----------- | --------- | ----- | ---- | -------------------------------- |
+| **youtube** | 0.3       | 80px  | ✅   | Video players, content platforms |
+| **netflix** | 0.4       | 100px | ✅   | Premium video experiences        |
+| **spotify** | 0.5       | 60px  | ✅   | Music, vibrant content           |
+| **apple**   | 0.25      | 50px  | ❌   | Minimal, elegant designs         |
+| **minimal** | 0.15      | 40px  | ❌   | Subtle effects                   |
+| **neon**    | 0.7       | 30px  | ✅   | Eye-catching, high-energy        |
+| **ambient** | 0.35      | 70px  | ✅   | Balanced, versatile (default)    |
 
 ### Using Presets
 
@@ -276,16 +337,16 @@ The library includes 7 built-in presets, each optimized for different use cases:
 
 ```typescript
 interface PresetConfig {
-  intensity: number;        // 0-1, glow intensity
-  blur: number;             // pixels, background blur
-  spread: "tight" | "normal" | "wide" | "ultra-wide";  // gradient spread
-  glow: boolean;            // enable glow effect
-  glowStrength: number;     // pixels, glow radius
-  vignette: boolean;        // enable vignette effect
+  intensity: number; // 0-1, glow intensity
+  blur: number; // pixels, background blur
+  spread: "tight" | "normal" | "wide" | "ultra-wide"; // gradient spread
+  glow: boolean; // enable glow effect
+  glowStrength: number; // pixels, glow radius
+  vignette: boolean; // enable vignette effect
   vignetteStrength: number; // 0-1, vignette opacity
-  colorBoost: number;       // 1.0 = normal, >1 = boosted saturation
-  fps: number;              // color extraction frame rate
-  sampling: number;         // pixel sampling step
+  colorBoost: number; // 1.0 = normal, >1 = boosted saturation
+  fps: number; // color extraction frame rate
+  sampling: number; // pixel sampling step
 }
 ```
 
@@ -301,7 +362,10 @@ interface PresetConfig {
   glowStrength={60}
   onColorChange={(color) => {
     // Update page theme based on video colors
-    document.body.style.setProperty('--theme-color', `rgb(${color.r}, ${color.g}, ${color.b})`);
+    document.body.style.setProperty(
+      "--theme-color",
+      `rgb(${color.r}, ${color.g}, ${color.b})`
+    );
   }}
 />
 ```
@@ -309,7 +373,13 @@ interface PresetConfig {
 ### Image Gallery with Hover Effects
 
 ```tsx
-<div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem" }}>
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "2rem",
+  }}
+>
   {images.map((src, idx) => (
     <CinematicImage
       key={idx}
@@ -336,14 +406,14 @@ const { color } = useAdaptiveItem(cardRef, {
   ref={cardRef}
   preset="apple"
   style={{
-    background: color 
+    background: color
       ? `linear-gradient(135deg, rgba(${color.r}, ${color.g}, ${color.b}, 0.2), transparent)`
       : undefined,
   }}
 >
   <h3>Dynamic Card</h3>
   <p>Color extracted from content</p>
-</CinematicCard>
+</CinematicCard>;
 ```
 
 ### Multiple Videos with Shared Context
@@ -370,9 +440,9 @@ const { color } = useAdaptiveItem(cardRef, {
 // Performance-optimized configuration
 <CinematicVideo
   src="video.mp4"
-  preset="minimal"  // Lower intensity = less computation
-  fps={8}           // Lower FPS
-  sampling={15}     // Higher sampling = faster
+  preset="minimal" // Lower intensity = less computation
+  fps={8} // Lower FPS
+  sampling={15} // Higher sampling = faster
 />
 ```
 
@@ -385,19 +455,26 @@ import { useAdaptiveController } from "react-cinematic-lighting";
 
 function CustomComponent() {
   const controller = useAdaptiveController();
-  
+
   // Get color for a specific item
   const color = controller.getColor("my-video-id");
-  
-  return <div style={{ background: color ? `rgb(${color.r}, ${color.g}, ${color.b})` : "#000" }} />;
+
+  return (
+    <div
+      style={{
+        background: color ? `rgb(${color.r}, ${color.g}, ${color.b})` : "#000",
+      }}
+    />
+  );
 }
 ```
 
 ### Custom Extractors
 
 The library automatically selects the appropriate extractor based on element type:
+
 - `VideoExtractor` - For `<video>` elements
-- `ImageExtractor` - For `<img>` elements  
+- `ImageExtractor` - For `<img>` elements
 - `CanvasExtractor` - For `<canvas>` elements
 - `ComponentExtractor` - For other DOM elements (uses computed styles)
 
@@ -405,7 +482,7 @@ You can force a specific extractor using `extractMode`:
 
 ```tsx
 useAdaptiveItem(ref, {
-  extractMode: "video",  // Force video extractor
+  extractMode: "video", // Force video extractor
 });
 ```
 

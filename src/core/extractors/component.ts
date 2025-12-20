@@ -6,7 +6,6 @@ export class ComponentExtractor implements ColorExtractor {
 
   constructor(element: HTMLElement, _options: ExtractorOptions = {}) {
     this.element = element;
-    // Prefix với _ để TypeScript biết đây là intentionally unused
   }
 
   private extractFromComputedStyle(): ColorRGB | null {

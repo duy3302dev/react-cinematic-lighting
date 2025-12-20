@@ -15,7 +15,6 @@ export function createExtractor(
     return new ImageExtractor(element, options);
   }
 
-  // Fallback cho các element khác
   throw new Error(
     `Extractor not implemented for element type: ${element.tagName}`
   );

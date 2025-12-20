@@ -1,5 +1,9 @@
-import type { ColorRGB, ColorExtractor, ExtractorOptions } from "../types";
-import { dominantColor } from "../../utils/colorUtils";
+import type {
+  ColorExtractor,
+  ExtractorOptions,
+  ExtractedColor,
+} from "../types";
+import { dominantColor, extractMultiZoneColors } from "../../utils/colorUtils";
 
 export class CanvasExtractor implements ColorExtractor {
   private canvas: HTMLCanvasElement;
@@ -11,7 +15,7 @@ export class CanvasExtractor implements ColorExtractor {
     this.options = options;
   }
 
-  start(callback: (color: ColorRGB) => void) {
+  start(callback: (color: ExtractedColor) => void) {
     const ctx = this.canvas.getContext("2d", { willReadFrequently: true });
 
     if (!ctx) {
@@ -27,18 +31,23 @@ export class CanvasExtractor implements ColorExtractor {
         this.canvas.height
       );
 
-      const color = dominantColor(imageData, this.options.sampling);
-      callback(color);
+      const sampling = this.options.sampling || 5;
+
+      if (this.options.multiZone) {
+        const zoneCount = this.options.zoneCount || 4;
+        const color = extractMultiZoneColors(imageData, zoneCount, sampling);
+        callback(color);
+      } else {
+        const color = dominantColor(imageData, sampling);
+        callback(color);
+      }
     };
 
-    // Canvas có thể được update động, nên check định kỳ nếu cần
     const fps = this.options.fps || 30;
     const intervalMs = 1000 / fps;
 
-    // Type assertion vì setInterval returns number trong browser
     this.intervalId = window.setInterval(extract, intervalMs);
 
-    // Extract ngay lần đầu
     extract();
   }
 

@@ -1,13 +1,13 @@
-import type { ColorRGB } from "./types";
+import type { ExtractedColor } from "./types";
 
 export class ColorManager {
-  private colors: Map<string, ColorRGB> = new Map();
+  private colors: Map<string, ExtractedColor> = new Map();
 
-  setColor(id: string, color: ColorRGB) {
+  setColor(id: string, color: ExtractedColor) {
     this.colors.set(id, color);
   }
 
-  getColor(id: string): ColorRGB | null {
+  getColor(id: string): ExtractedColor | null {
     return this.colors.get(id) || null;
   }
 
@@ -15,7 +15,7 @@ export class ColorManager {
     this.colors.delete(id);
   }
 
-  getAllColors(): Map<string, ColorRGB> {
+  getAllColors(): Map<string, ExtractedColor> {
     return this.colors;
   }
 }

@@ -1,6 +1,6 @@
 import { Registry } from "./registry";
 import { ColorManager } from "./colorManager";
-import type { ColorRGB } from "./types";
+import type { ExtractedColor } from "./types";
 import type { AdaptiveItemProps } from "../react/types";
 
 export interface ControllerConfig {
@@ -29,11 +29,11 @@ export class AdaptiveController {
     if (this.debug) console.log(`[AdaptiveController] Unregistered: ${id}`);
   }
 
-  updateColor(id: string, color: ColorRGB) {
+  updateColor(id: string, color: ExtractedColor) {
     this.colorManager.setColor(id, color);
   }
 
-  getColor(id: string): ColorRGB | null {
+  getColor(id: string): ExtractedColor | null {
     return this.colorManager.getColor(id);
   }
 }
