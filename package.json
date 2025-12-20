@@ -1,6 +1,6 @@
 {
   "name": "react-cinematic-lighting",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Cinematic lighting effects for React - video, images, and components",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -33,7 +33,9 @@
     "glow",
     "video",
     "color-extraction",
-    "ui-effects"
+    "ui-effects",
+    "typescript",
+    "library"
   ],
   "author": "duy3302dev",
   "license": "MIT",
